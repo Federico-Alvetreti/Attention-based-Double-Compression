@@ -57,7 +57,7 @@ caches the pretrained DeiT-T / DeiT-S weights through `timm`.
 Train ADC on CIFAR-100 with DeiT-T at target compression $\xi=0.1$:
 
 ```bash
-python main.py method=proposal dataset=cifar_100 model=deit_tiny_patch16_224 \
+python main.py method=adc dataset=cifar_100 model=deit_tiny_patch16_224 \
     method.parameters.compression=0.1
 ```
 
@@ -111,11 +111,11 @@ for R in 2 4 8 16 32; do
 done
 ```
 
-### ADC (proposal)
+### ADC
 
 ```bash
 for c in 0.01 0.05 0.1 0.2 0.3 0.4 0.5; do
-  python main.py method=proposal method.parameters.compression=$c
+  python main.py method=adc method.parameters.compression=$c
 done
 ```
 
@@ -123,7 +123,7 @@ ADC also exposes the two underlying factors directly if you want to step off
 the diagonal $T/B = k/n = \sqrt{\xi}$:
 
 ```bash
-python main.py method=proposal \
+python main.py method=adc \
     method.parameters.batch_compression=0.4 \
     method.parameters.token_compression=0.6
 ```
@@ -137,7 +137,7 @@ seeds (43422, 51, 114). FLOP measurements behind Figure 5 are produced by
 [`scripts/profile_flops.sh`](scripts/profile_flops.sh), which drives
 [`tools/compute_flops.py`](tools/compute_flops.py). The $(T/B, k/n)$ grid
 search visualised in Figure 2 was run with
-[`scripts/tune_proposal.sh`](scripts/tune_proposal.sh).
+[`scripts/tune_adc.sh`](scripts/tune_adc.sh).
 
 The corresponding numeric outputs are archived locally; each plotting script
 reads from there.
@@ -151,7 +151,7 @@ reads from there.
 │   ├── default.yaml
 │   ├── communication/{clean,noisy}.yaml
 │   ├── dataset/{cifar_100,food_101}.yaml
-│   ├── method/{base,bottlenet,c3_sl,top_k,random_top_k,proposal}.yaml
+│   ├── method/{base,bottlenet,c3_sl,top_k,random_top_k,adc}.yaml
 │   ├── model/{deit_tiny,deit_small}_patch16_224.yaml
 │   └── optimizer/adam.yaml
 ├── methods/                      Compression methods (paper baselines + ADC)
@@ -160,7 +160,7 @@ reads from there.
 │   ├── download_data.py
 │   ├── run_paper_experiments.sh
 │   ├── profile_flops.sh
-│   ├── tune_proposal.sh
+│   ├── tune_adc.sh
 │   └── slurm/                    CINECA / Leonardo job templates
 └── tools/compute_flops.py        FLOP profiler
 ```

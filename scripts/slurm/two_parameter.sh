@@ -55,12 +55,10 @@ source activate ood || {
 
 if [ ${1} = 'bottlenet' ]; then
   srun python main.py method=${1} dataset=${3} model=${2} method.parameters.compression=${4}
-elif [ ${1} = 'c3-sl' ]; then
+elif [ ${1} = 'c3_sl' ]; then
   srun python main.py method=${1} dataset=${3} model=${2} method.parameters.R=${4}
-elif [ ${1} = 'proposal' ]; then
+elif [ ${1} = 'adc' ]; then
   srun python main.py method=${1} dataset=${3} model=${2} method.parameters.compression=${4}
-elif [ ${1} = 'quantization' ]; then
-  srun python main.py method=${1} dataset=${3} model=${2} method.parameters.n_bits=${4}
 elif [ ${1} = 'random_top_k' ]; then
   srun python main.py method=${1} dataset=${3} model=${2} method.parameters.rate=${4}
 elif [ ${1} = 'top_k' ]; then

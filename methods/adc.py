@@ -5,7 +5,7 @@ import torch
 from kmeans_pytorch import kmeans
 import torch.nn.functional as F
 
-# Block used by our proposal to compress batches and select tokens 
+# ADC block: cluster the batch on CLS attention and keep the top-k tokens.
 class Compress_Batches_and_Select_Tokens_Block_Wrapper(nn.Module):
 
     def __init__(self, block, batch_compression, token_compression):

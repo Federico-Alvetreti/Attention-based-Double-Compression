@@ -37,9 +37,9 @@ for model in "${models[@]}"; do
             method.parameters.rate="$rate" model="$model"
     done
 
-    # ---- ADC (proposal) -----------------------------------------------------
+    # ---- ADC ----------------------------------------------------------------
     for compression in 0.01 0.05 0.1 0.2 0.3 0.4 0.5; do
-        python tools/compute_flops.py method=proposal \
+        python tools/compute_flops.py method=adc \
             method.parameters.compression="$compression" model="$model"
     done
 

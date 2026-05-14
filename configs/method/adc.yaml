@@ -1,10 +1,10 @@
 model:
-  _target_: methods.proposal.model
+  _target_: methods.adc.model
   token_compression: ${..parameters.token_compression}
   batch_compression: ${..parameters.batch_compression}
   compression: ${..parameters.compression}
 
-name: proposal
+name: adc
 parameters:
   compression: 1
   batch_compression: 1

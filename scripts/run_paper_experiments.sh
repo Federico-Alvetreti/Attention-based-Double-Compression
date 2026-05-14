@@ -64,9 +64,9 @@ for seed in $SEEDS; do
         python main.py method=c3_sl method.parameters.R="$R" "${common[@]}"
       done
 
-      # ---- ADC (proposal) -------------------------------------------------
+      # ---- ADC -----------------------------------------------------------
       for compression in 0.01 0.05 0.1 0.2 0.3 0.4 0.5; do
-        python main.py method=proposal \
+        python main.py method=adc \
           method.parameters.compression="$compression" "${common[@]}"
       done
 

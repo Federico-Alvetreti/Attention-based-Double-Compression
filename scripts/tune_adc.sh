@@ -16,7 +16,7 @@ token_compressions=(0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1)
 
 for batch_compression in "${batch_compressions[@]}"; do
   for token_compression in "${token_compressions[@]}"; do
-    python main.py method=proposal \
+    python main.py method=adc \
       "hyperparameters.experiment_name=${EXPERIMENT_NAME}" \
       "dataset=${DATASET}" \
       "model=${MODEL}" \
