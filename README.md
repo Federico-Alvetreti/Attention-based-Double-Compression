@@ -13,8 +13,6 @@ by Federico Alvetreti, Jary Pomponi, Paolo Di Lorenzo, and Simone Scardapane.
 ## Table of contents
 
 - [Highlights](#highlights)
-- [Method](#method)
-- [Results](#results)
 - [Installation](#installation)
 - [Data](#data)
 - [Quickstart](#quickstart)
@@ -27,19 +25,16 @@ by Federico Alvetreti, Jary Pomponi, Paolo Di Lorenzo, and Simone Scardapane.
 ---
 
 ## Highlights
+![ADC method overview](images/method.png)
 
 - **ADC** — a dual-stream compression strategy for Split Learning of Vision Transformers that acts on both the **batch** and **token** dimensions.
 - Clusters batch samples that share similar class-token attention patterns and replaces each cluster by its average activation.
-- Prunes the merged activations down to the top-$k$ tokens identified by each cluster centroid.
+- Prunes the merged activations down to the top-k tokens identified by each cluster centroid.
 - Total compression ratio factorises as $\xi = (T/B)\cdot(k/n)$, giving a single dial that controls bandwidth.
 - Maintains near-baseline accuracy at compression regimes where prior methods (BottleNet++, Top-K, Random Top-K, C3-SL) collapse.
 - No extra parameters, no auxiliary training objectives, and implicit gradient compression for free.
 
-![ADC method overview](images/method.png)
 
-## Results
-
-Test accuracy vs. communication compression ratio $\xi$, averaged over three seeds. ADC keeps near-baseline accuracy at compression levels where every other method collapses.
 
 |               | DeiT-T                          | DeiT-S                           |
 | ------------- | ------------------------------- | -------------------------------- |
