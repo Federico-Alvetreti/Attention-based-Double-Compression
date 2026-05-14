@@ -15,7 +15,7 @@ class RandomTopKModifier(nn.Module):
          
         batch_size = x.shape[0]
         x_flat = x.view(batch_size, -1)
-        k = max(1, round(self.rate * x_flat.shape[1]))
+        k = max(1, round(self.rate * x_flat.shape[1].item()))
         sample_dim = x_flat.shape[1]
         _, top_k_indices = torch.topk(torch.abs(x_flat), k, sorted=False)
 
@@ -86,6 +86,7 @@ class model(nn.Module):
 
         # Add the RandomTopK selection after the encoder 
         model.blocks = nn.Sequential(*blocks_before, RandomTopKModifier(rate, random_portion), channel, *blocks_after)
+        # model.blocks = nn.Sequential(*blocks_before, RandomTopKModifier(rate, random_portion))
 
         return model 
 

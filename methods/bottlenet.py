@@ -42,7 +42,6 @@ class Encoder(nn.Module):
                  input_size,
                  output_size,
                  n_layers=2,
-                 normalize=True,
                  drop_last_activation=True,
                  *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -52,24 +51,17 @@ class Encoder(nn.Module):
         if self.output_size == 0: 
             raise ValueError("Can't train with this compression.")
         
-        # Get the real and complex feed forward networks 
+        # Get the encoding ffn 
         self.ffn = get_ffn(input_size=input_size,
                                 output_size=self.output_size,
                                 n_layers=n_layers,
                                 drop_last_activation=drop_last_activation,
                                 n_copy=1)
-        # Store parameters 
-        self.normalize = normalize
 
 
     def forward(self, x, *args, **kwargs):
 
-        # Get real and complex parts of the input 
         x= self.ffn(x)
-
-        # Normalize if specified  
-        if self.normalize:
-            x = x / torch.norm(x, 2, -1, keepdim=True)
 
         return x
 
@@ -80,7 +72,6 @@ class Decoder(nn.Module):
                  input_size,
                  output_size,
                  n_layers,
-                 normalize=True,
                  drop_last_activation=False,
                  *args, **kwargs):
 
@@ -94,13 +85,7 @@ class Decoder(nn.Module):
                                         drop_last_activation=drop_last_activation,
                                         n_copy=1)
 
-        self.normalize = normalize
-
     def forward(self, x, *args, **kwargs):
-
-        # Normalize if specified  
-        if self.normalize:
-            x = x / torch.norm(x, 2, -1, keepdim=True)
 
         # Decode back 
         x = self.decoder_ffn(x)
@@ -142,12 +127,15 @@ class model(nn.Module):
         encoder = Encoder(model.embed_dim, compression, n_layers)
         decoder = Decoder(encoder.output_size, model.embed_dim, n_layers)
 
+        print(encoder.output_size)
+
         # Split the original model 
         blocks_before = model.blocks[:split_index]
         blocks_after = model.blocks[split_index:]
 
         # Add comm pipeline and compression modules 
         model.blocks = nn.Sequential(*blocks_before, encoder, channel, decoder, *blocks_after)
+        # model.blocks = nn.Sequential(*blocks_before, encoder)
 
         return model 
 

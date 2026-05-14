@@ -4,5 +4,5 @@ model:
   n_layers: ${..parameters.n_layers}
 name : Bottlenet
 parameters:
-  compression: 0.05
+  compression: 0.2
   n_layers: 2

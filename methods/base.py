@@ -37,7 +37,7 @@ class model(nn.Module):
 
         # Add comm pipeline and compression modules 
         model.blocks = nn.Sequential(*blocks_before, channel, *blocks_after)
-
+        # model.blocks = nn.Sequential(*blocks_before)
         return model 
 
     # Forward 

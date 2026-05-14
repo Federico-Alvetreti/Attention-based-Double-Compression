@@ -41,5 +41,5 @@ test:
 
 name : food-101
 num_classes : 101 
-batch_size : 128
+batch_size : 256
 max_communication: 750000 # Number of samples that can be sent. 

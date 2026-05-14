@@ -133,7 +133,7 @@ def training_schedule(model, train_data_loader, val_data_loader, optimizer, max_
     best_val_accuracy = 0
 
 
-    for epoch in range(1, 1000):
+    for epoch in range(1, 10):
         torch.cuda.empty_cache()
         if plot:
             print(f"\n\nEPOCH {epoch}")
@@ -162,6 +162,7 @@ def training_schedule(model, train_data_loader, val_data_loader, optimizer, max_
         # Save the best model 
         if avg_val_accuracy > best_val_accuracy:
 
+            best_val_accuracy = avg_val_accuracy
             # Save the model checkpoint
             model_file = os.path.join(hydra_output_dir, "best_model.pt")
             torch.save(model.state_dict(), model_file)
@@ -195,7 +196,7 @@ def training_schedule(model, train_data_loader, val_data_loader, optimizer, max_
 def main(cfg):
 
     # Set seed for reproducibility 
-    torch.manual_seed(42)
+    torch.manual_seed(43422)
 
     # Set device
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -234,6 +235,12 @@ def main(cfg):
     # Get the current Hydra output directory
     hydra_output_dir = hydra.core.hydra_config.HydraConfig.get().runtime.output_dir
 
+    from fvcore.nn import FlopCountAnalysis
+    inputs = torch.randn(batch_size, 3, 224, 224).to(device)  # Example input, adjust shape as needed
+    flops = FlopCountAnalysis(model, inputs)
+    print(flops.total())
+
+    return 
     # Train 
     training_schedule(model, train_dataloader, val_dataloader, optimizer, max_communication, device, hydra_output_dir)
 

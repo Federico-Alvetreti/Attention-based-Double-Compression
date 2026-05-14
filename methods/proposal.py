@@ -46,7 +46,7 @@ class Compress_Batches_and_Select_Tokens_Block_Wrapper(nn.Module):
                                             num_clusters=self.n_new_batches,             
                                             distance='euclidean',        
                                             tol=1e-4,                    
-                                            iter_limit=50,          
+                                            iter_limit=500,          
                                             device=device,
                                             tqdm_flag=False              
                                             )
@@ -157,7 +157,9 @@ class model(nn.Module):
                  model: VisionTransformer,
                  channel,
                  split_index,
-                 compression,
+                 compression = None,
+                 batch_compression = None,
+                 token_compression = None, 
                  *args, **kwargs):
         
         super().__init__(*args, **kwargs)
@@ -165,11 +167,13 @@ class model(nn.Module):
         self.compressor_module = None
 
 
-        # Store compression
+        # Store compressions
         self.compression = compression
+        self.batch_compression = batch_compression
+        self.token_compression = token_compression
 
         # Build model 
-        self.model = self.build_model(model, channel, split_index, compression)
+        self.model = self.build_model(model, channel, split_index)
 
         # Store channel 
         self.channel = channel
@@ -184,18 +188,17 @@ class model(nn.Module):
     def build_model(self, 
                     model, 
                     channel,
-                    split_index,
-                    compression):
+                    split_index):
 
 
-        # Resolve compression knowing token_compression = batch_compression ** 4
-        batch_compression = compression ** (1/5)
-        token_compression = batch_compression ** 4
+        if self.compression != None:
+            self.batch_compression = self.compression ** (1/2)
+            self.token_compression = self.batch_compression ** (1/2)
 
 
         # Wrap last block with our compression method
         model.blocks[split_index -1].attn = Store_Class_Token_Attn_Wrapper(model.blocks[split_index -1].attn)
-        model.blocks[split_index -1] = Compress_Batches_and_Select_Tokens_Block_Wrapper(model.blocks[split_index -1], batch_compression, token_compression)
+        model.blocks[split_index -1] = Compress_Batches_and_Select_Tokens_Block_Wrapper(model.blocks[split_index -1], self.batch_compression, self.token_compression)
         self.compressor_module = model.blocks[split_index -1]
 
         # Split the original model 
@@ -204,6 +207,7 @@ class model(nn.Module):
 
         # Add comm pipeline and compression modules 
         model.blocks = nn.Sequential(*blocks_before, channel, *blocks_after)
+        # model.blocks = nn.Sequential(*blocks_before)
 
         return model 
 

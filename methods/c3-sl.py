@@ -2,8 +2,32 @@
 from timm.models import VisionTransformer
 import torch.nn as nn 
 import torch
+import math
 
 
+
+# Helper function to calculate FFT FLOPS
+# FFT of size N requires approximately 5*N*log2(N) operations
+def compute_fft_flops(batch_size, signal_length):
+    """Compute FLOPS for FFT operations"""
+    return batch_size * signal_length * math.log2(signal_length) * 5
+
+# Helper function to calculate circular convolution FLOPS
+def compute_circular_convolution_flops(batch_size, num_signals, signal_length):
+    """
+    Compute FLOPS for FFT-based circular convolution
+    - FFT of signal: 5*N*log2(N)
+    - FFT of kernel: 5*N*log2(N)
+    - Element-wise multiplication: N
+    - IFFT: 5*N*log2(N)
+    Total: ~15*N*log2(N) + N per operation
+    """
+    n = signal_length
+    fft_forward = compute_fft_flops(batch_size * num_signals, n)
+    fft_inverse = compute_fft_flops(batch_size * num_signals, n)
+    element_wise_mult = batch_size * num_signals * n
+    total_flops = fft_forward + element_wise_mult + fft_inverse
+    return total_flops
 
 # Circular convolution 
 def batch_circular_convolution_fft(x, h):
@@ -50,6 +74,7 @@ class Encoder(nn.Module):
         
         self.R = R
         self.keys = keys
+        self.conv_flops = 0  # Track FLOPS from circular convolutions
 
         super().__init__(*args, **kwargs)
 
@@ -66,6 +91,16 @@ class Encoder(nn.Module):
             # Reshape in B/R x R x d 
             x = x.reshape(batch_dim // self.R, self.R, features_dim)
 
+            # Calculate FLOPS for circular convolution
+            # Shape: [batch_dim // self.R, R, features_dim]
+            batch_over_r = batch_dim // self.R
+            conv_flops = compute_circular_convolution_flops(
+                batch_size=batch_over_r,
+                num_signals=self.R,
+                signal_length=features_dim
+            )
+            self.conv_flops += conv_flops
+
             # Do batch circular convolution 
             x = batch_circular_convolution_fft(x, self.keys)
 
@@ -79,13 +114,15 @@ class Decoder(nn.Module):
 
     def __init__(self,
                  keys,
+                 shape,
                  *args, **kwargs):
 
         super().__init__(*args, **kwargs)
 
-
         # Store keys 
         self.keys = keys
+        self.shape = shape 
+        self.corr_flops = 0  # Track FLOPS from circular correlations
 
     def forward(self, x, *args, **kwargs):
 
@@ -93,6 +130,19 @@ class Decoder(nn.Module):
 
             # from B/R x d  -> B/R x 1 x d 
             x = x.unsqueeze(1)
+
+            # Calculate FLOPS for circular correlation
+            # Shape before reshape: [B/R, 1, D]
+            batch_over_r = x.shape[0]
+            num_signals = self.keys.shape[0]  # R
+            signal_length = x.shape[-1]       # D
+            
+            corr_flops = compute_circular_convolution_flops(
+                batch_size=batch_over_r,
+                num_signals=num_signals,
+                signal_length=signal_length
+            )
+            self.corr_flops += corr_flops
 
             # Decode into a B/R x R x D tensor 
             x = batch_circular_correlation_fft(x, self.keys)
@@ -105,7 +155,7 @@ class Decoder(nn.Module):
             x = x.reshape(batch_size, features_dim)
 
             # Reshape into B X T X F
-            x = x.reshape(batch_size, 197, 192)
+            x = x.reshape(self.shape)
 
         return x
 
@@ -122,7 +172,6 @@ class model(nn.Module):
                  *args, **kwargs): 
         
         super().__init__(*args, **kwargs)
-
 
         # Get dimensions 
         self.batch_size = batch_size
@@ -143,8 +192,11 @@ class model(nn.Module):
         # Variable to store communication 
         self.communication = 0 
 
+        # Variable to store circular convolution FLOPS
+        self.circular_conv_flops = 0
+
         # Store name 
-        self.name = "Bottelnet"
+        self.name = "C3-SL"
 
 
 
@@ -178,7 +230,7 @@ class model(nn.Module):
 
         # Get encoder and decoder
         encoder = Encoder(R, self.keys)
-        decoder = Decoder(self.keys)
+        decoder = Decoder(self.keys, shape = (self.batch_size, self.n_tokens, self.token_dim))
 
         # Split the original model 
         blocks_before = model.blocks[:split_index]
@@ -186,6 +238,7 @@ class model(nn.Module):
 
         # Add comm pipeline and compression modules 
         model.blocks = nn.Sequential(*blocks_before, encoder, channel, decoder, *blocks_after)
+        # model.blocks = nn.Sequential(*blocks_before, encoder)
 
         return model 
 
@@ -194,4 +247,5 @@ class model(nn.Module):
         batch_size = x.shape[0]
         if self.training: 
             self.communication += self.compression * batch_size
+        
         return self.model.forward(x)
