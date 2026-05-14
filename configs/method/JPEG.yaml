@@ -1,6 +1,0 @@
-model:
-  _target_: scripts.methods.JPEG
-  _recursive_: false
-name : JPEG
-parameters:
-  k_over_n: 0.1

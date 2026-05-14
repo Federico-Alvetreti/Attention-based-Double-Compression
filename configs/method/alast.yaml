@@ -1,6 +1,0 @@
-function:
-  _target_: methods.alast.model
-  _recursive_: false
-name: alast
-parameters:
-  K : 9

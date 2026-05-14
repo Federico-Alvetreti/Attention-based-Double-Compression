@@ -1,11 +1,15 @@
 # Libraries
 import os
+import sys
 import json
-import hydra 
-import torch 
+import hydra
+import torch
 from fvcore.nn import FlopCountAnalysis
 
-# Custom functions 
+# Make sibling packages (comm/, methods/) importable regardless of cwd.
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+# Custom functions
 from omegaconf import OmegaConf
 
 
@@ -26,8 +30,8 @@ OmegaConf.register_new_resolver(
 OmegaConf.register_new_resolver("flatten_params", flatten_params)
 
 
-# Hydra configuration 
-@hydra.main(config_path="configs",
+# Hydra configuration
+@hydra.main(config_path="../configs",
             version_base='1.2',
             config_name="default")
 def main(cfg):
@@ -103,7 +107,6 @@ def main(cfg):
     decoder_flops = 0
 
     if method_name_lower == "c3-sl":
-        print("CIAO")
         for module in model.model.modules():
             if hasattr(module, '__class__') and module.__class__.__name__ == 'Encoder':
                 encoder_flops += getattr(module, 'conv_flops', 0)
@@ -129,8 +132,11 @@ def main(cfg):
 
 
     
-    # Load existing FLOPS data or create new dict
-    flops_file = "/home/federico/Desktop/Split_Learning/results/flops.json"
+    # Load existing FLOPS data or create new dict. Writes to results/flops/
+    # by default (the Hydra working tree); copy into paper_results/flops/ only
+    # when intentionally updating the archive consumed by figures/fig5_*.py.
+    repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    flops_file = os.path.join(repo_root, "results", "flops", "flops.json")
     os.makedirs(os.path.dirname(flops_file), exist_ok=True)
     
     if os.path.exists(flops_file) and os.path.getsize(flops_file) > 0:

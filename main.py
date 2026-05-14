@@ -125,15 +125,16 @@ def validation_phase(model, val_data_loader, loss, device, plot):
   return average_val_loss, average_val_accuracy
 
 # Standard training / validation cicle
-def training_schedule(model, train_data_loader, val_data_loader, optimizer, max_communication, device, hydra_output_dir, loss=torch.nn.CrossEntropyLoss(),  plot=True):
+def training_schedule(model, train_data_loader, val_data_loader, optimizer, max_communication, device, hydra_output_dir, loss=torch.nn.CrossEntropyLoss(),  plot=True, max_epochs=100):
 
-    # Lists to store results 
+    # Lists to store results
     train_losses, train_accuracies, val_losses, val_accuracies, communication_cost = [], [], [], [], []
 
     best_val_accuracy = 0
 
 
-    for epoch in range(1, 10):
+    # The loop terminates on the communication budget; max_epochs is a safety cap.
+    for epoch in range(1, max_epochs + 1):
         torch.cuda.empty_cache()
         if plot:
             print(f"\n\nEPOCH {epoch}")
@@ -195,8 +196,8 @@ def training_schedule(model, train_data_loader, val_data_loader, optimizer, max_
             config_name="default")
 def main(cfg):
 
-    # Set seed for reproducibility 
-    torch.manual_seed(43422)
+    # Set seed for reproducibility
+    torch.manual_seed(cfg.hyperparameters.seed)
 
     # Set device
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -235,17 +236,9 @@ def main(cfg):
     # Get the current Hydra output directory
     hydra_output_dir = hydra.core.hydra_config.HydraConfig.get().runtime.output_dir
 
-    from fvcore.nn import FlopCountAnalysis
-    inputs = torch.randn(batch_size, 3, 224, 224).to(device)  # Example input, adjust shape as needed
-    flops = FlopCountAnalysis(model, inputs)
-    print(flops.total())
-
-    return 
-    # Train 
+    # Train
     training_schedule(model, train_dataloader, val_dataloader, optimizer, max_communication, device, hydra_output_dir)
 
-    return
 
-# At the very bottom
 if __name__ == "__main__":
     main()

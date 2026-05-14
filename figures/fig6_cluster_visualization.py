@@ -116,29 +116,40 @@ def main():
     # Set seed for reproducibility 
     torch.manual_seed(42) 
 
-    # Select run
+    # Resolve paths from this script's location. Checkpoints + Hydra configs
+    # live in the local-only `models/` archive (git-ignored); update the
+    # MODELS_ROOT environment variable if you keep them elsewhere.
+    from pathlib import Path
+    script_dir = Path(__file__).parent
+    repo_root = script_dir.parent
+    models_root = Path(os.environ.get(
+        "MODELS_ROOT",
+        repo_root / "models" / "deit_tiny_models" / "results" / "prova" / "food-101",
+    ))
+    out_root = script_dir / "outputs" / "fig6"
+
     for model_name in ["deit_tiny_patch16_224.fb_in1k", "deit_small_patch16_224.fb_in1k"]:
         for compression in [0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5]:
 
-            compression_path ="{'compression': "+str(compression) +"}"
-            
-            # Get directory and congiguration 
-            run_dir = "/home/federico/Desktop/Split_Learning/models/deit_tiny_models/results/prova/food-101/"+ model_name + "/proposal/communication=clean/params=" + compression_path
-            run_cfg = OmegaConf.load(run_dir + "/.hydra" + "/config.yaml")
+            compression_path = "{'compression': " + str(compression) + "}"
+            run_dir = models_root / model_name / "proposal" / "communication=clean" / f"params={compression_path}"
+            if not run_dir.exists():
+                print(f"[skip] {run_dir} not found")
+                continue
 
-
-            # Load model and data loader 
+            run_cfg = OmegaConf.load(str(run_dir / ".hydra" / "config.yaml"))
             model, data_loader = instantiate_from_config(run_cfg)
-            model.load_state_dict(torch.load(run_dir + "/best_model.pt", map_location="cpu"))
+            model.load_state_dict(torch.load(str(run_dir / "best_model.pt"), map_location="cpu"))
 
+            output_dir = out_root / model_name / str(compression)
+            output_dir.mkdir(parents=True, exist_ok=True)
 
-            output_dir = "/home/federico/Desktop/Split_Learning/plots/clusters/" + model_name +"/" + str(compression) +"/"
-            os.makedirs(output_dir, exist_ok=True)
-
-            visualise_clusters(model,
-                                data_loader,
-                                output_dir,
-                                device = torch.device('cuda' if torch.cuda.is_available() else 'cpu'))
+            visualise_clusters(
+                model,
+                data_loader,
+                str(output_dir),
+                device=torch.device("cuda" if torch.cuda.is_available() else "cpu"),
+            )
 
 
 if __name__ == "__main__":

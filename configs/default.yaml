@@ -1,16 +1,17 @@
 # Default Configurations 
 defaults:
   - communication: clean
-  - dataset: food_101
+  - dataset: cifar_100
   - model: deit_tiny_patch16_224
   - optimizer: adam
-  - method : c3-sl
+  - method: proposal
   - _self_
 
-# Hyperparameters 
+# Hyperparameters
 hyperparameters:
-  split_index : 3  # Where to split the network
-  experiment_name : flops_counter  # Name of the experiment
+  split_index: 3      # Where to split the network (1 < l < L)
+  seed: 43422         # PyTorch seed used by main.py
+  experiment_name: default
 
 
 # Set folders for results, datasets and plots 
