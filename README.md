@@ -12,6 +12,8 @@ top-$k$ tokens identified by the cluster centroid. The two steps act on the
 batch and token dimensions respectively, so the total compression ratio
 factorises as $\xi = (T/B)\cdot(k/n)$.
 
+![ADC method overview](images/method.png)
+
 ## Abstract
 
 > Split Learning (SL) enables collaborative training across edge devices and
@@ -32,6 +34,17 @@ factorises as $\xi = (T/B)\cdot(k/n)$.
 > additional tuning or approximation. Experimental results demonstrate that
 > ADC significantly outperforms state-of-the-art methods, maintaining high
 > accuracy even at extreme compression regimes.
+
+## Main results
+
+Test accuracy vs. communication compression ratio $\xi$, averaged over three
+seeds. ADC (red) keeps near-baseline accuracy at compression levels where
+every other method collapses.
+
+|  | DeiT-T | DeiT-S |
+|---|---|---|
+| **CIFAR-100** | ![](images/cifar100_tiny.png) | ![](images/cifar100_small.png) |
+| **Food-101**  | ![](images/food-101_tiny.png) | ![](images/food-101_small.png) |
 
 ## Installation
 
