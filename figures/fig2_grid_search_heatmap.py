@@ -119,7 +119,7 @@ def pivot_metric(df: pd.DataFrame, metric: str) -> pd.DataFrame:
     )
     return pivot
 def make_heatmaps(df: pd.DataFrame, output_file_prefix: str) -> None:
-    """Create and save two heatmap figures separately."""
+    """Render the validation-accuracy heatmap for the (T/B, k/n) grid."""
 
     # Ensure output directory exists
     output_dir = os.path.dirname(output_file_prefix)
@@ -127,23 +127,8 @@ def make_heatmaps(df: pd.DataFrame, output_file_prefix: str) -> None:
         os.makedirs(output_dir, exist_ok=True)
 
     acc_grid = pivot_metric(df, "val_acc")
-    comp_grid = pivot_metric(df, "compression")
 
-    token_vals = np.array(acc_grid.columns.values, dtype=float)  # k/n (x-axis)
-    batch_vals = np.array(acc_grid.index.values, dtype=float)    # T/B (y-axis)
-
-
-    token_vals_dense = np.linspace(token_vals.min(), token_vals.max(), 500)
-    batch_line_dense = token_vals_dense 
-
-    valid = (batch_line_dense >= batch_vals.min()) & (batch_line_dense <= batch_vals.max())
-    token_vals_dense = token_vals_dense[valid]
-    batch_line_dense = batch_line_dense[valid]
-
-    x_guide = np.interp(token_vals_dense, token_vals, np.arange(len(token_vals)))  # x = k/n
-    y_guide = np.interp(batch_line_dense, batch_vals, np.arange(len(batch_vals)))  # y = T/B
-
-    # === First heatmap: Validation Accuracy ===
+    # === Validation Accuracy heatmap ===
     fig_acc, ax_acc = plt.subplots(figsize=(7, 7.5), constrained_layout=True)
     cmap_acc = plt.get_cmap("viridis")
     im0 = ax_acc.imshow(acc_grid, origin="lower", aspect="auto", cmap=cmap_acc, norm=PowerNorm(gamma=2.5))
@@ -179,7 +164,7 @@ def make_heatmaps(df: pd.DataFrame, output_file_prefix: str) -> None:
 
     # Add legend for iso-compression lines
     legend_line = Line2D([0], [0], color='white', lw=2.5, linestyle='dashed')
-    ax_acc.legend([legend_line], ["Same ξ lines"], loc="lower left", facecolor="black",fontsize="25", framealpha=0.4, labelcolor="white")
+    ax_acc.legend([legend_line], ["Same ξ"], loc="lower left", facecolor="black", fontsize="25", framealpha=0.4, labelcolor="white")
     
     # Label the contours
     # ax_acc.clabel(cntr, inline=True, fontsize=12, fmt='%g', colors='white', use_clabeltext=True)
@@ -194,28 +179,6 @@ def make_heatmaps(df: pd.DataFrame, output_file_prefix: str) -> None:
     fig_acc.savefig(acc_file, dpi=300, format="pdf")
     fig_acc.savefig(f"{output_file_prefix}_accuracy.jpeg", dpi=300)
     print(f"[info] Accuracy heatmap saved to {acc_file}")
-
-    # === Second heatmap: Compression ===
-    fig_comp, ax_comp = plt.subplots(figsize=(7, 7.5), constrained_layout=True)
-    cmap_comp = plt.get_cmap("plasma")
-    im1 = ax_comp.imshow(comp_grid, origin="lower", aspect="auto", cmap=cmap_comp)
-
-    ax_comp.set_ylabel("k/n")
-    ax_comp.set_xlabel("T/B")
-    ax_comp.set_yticks(range(len(comp_grid.columns)))
-    ax_comp.set_yticklabels(comp_grid.columns)
-    ax_comp.set_xticks(range(len(comp_grid.index)))
-    ax_comp.set_xticklabels(comp_grid.index)
-
-    cbar1 = fig_comp.colorbar(im1, ax=ax_comp, pad=0.02, shrink=0.9, orientation="horizontal")
-
-    # ax_comp.plot(x_coords, y_coords, color="red", linestyle="--", linewidth=3, label="Custom boundary")
-    # ax_comp.plot(x_guide, y_guide, color="blue", linestyle=":", linewidth=2, label=r"$k/n = (T/B)^4$")
-    # ax_comp.legend(loc='lower right')
-
-    comp_file = f"{output_file_prefix}_compression.pdf"
-    fig_comp.savefig(comp_file, dpi=300, format="pdf")
-    print(f"[info] Compression heatmap saved to {comp_file}")
 
 
 
