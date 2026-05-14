@@ -139,19 +139,8 @@ seeds (43422, 51, 114). FLOP measurements behind Figure 5 are produced by
 search visualised in Figure 2 was run with
 [`scripts/tune_proposal.sh`](scripts/tune_proposal.sh).
 
-The corresponding numeric outputs are archived locally under `paper_results/`
-(git-ignored — see [`paper_results/README.md`](paper_results/README.md) for
-the layout); each figure script reads from there.
-
-## Paper figure → script map
-
-| Figure | Script | Reads from | Output |
-|---|---|---|---|
-| Fig. 2 (T/B × k/n heatmap) | [`figures/fig2_grid_search_heatmap.py`](figures/fig2_grid_search_heatmap.py) | `paper_results/grid_search/` | `figures/outputs/fig2_*.pdf` |
-| Fig. 3 (accuracy vs ξ) | [`figures/fig3_accuracy_vs_compression.py`](figures/fig3_accuracy_vs_compression.py) | `paper_results/main/seed_*/` | `figures/outputs/fig3/...` |
-| Fig. 4 (training curves) | [`figures/fig4_training_curves.py`](figures/fig4_training_curves.py) | `paper_results/main/seed_*/` | `figures/outputs/fig4/...` |
-| Fig. 5 (FLOPs analysis) | [`figures/fig5_flops_analysis.py`](figures/fig5_flops_analysis.py) | `paper_results/flops/flops.json` | `figures/outputs/edge_overhead.pdf`, `server_usage.pdf` |
-| Fig. 6 (cluster viz) | [`figures/fig6_cluster_visualization.py`](figures/fig6_cluster_visualization.py) | `models/...` (checkpoints + Hydra config) | `figures/outputs/fig6/...` |
+The corresponding numeric outputs are archived locally; each plotting script
+reads from there.
 
 ## Repository layout
 
@@ -173,9 +162,7 @@ the layout); each figure script reads from there.
 │   ├── profile_flops.sh
 │   ├── tune_proposal.sh
 │   └── slurm/                    CINECA / Leonardo job templates
-├── tools/compute_flops.py        FLOP profiler driving Fig. 5 data
-├── figures/figN_*.py             One script per paper figure (outputs go to figures/outputs/)
-└── paper_results/                Local-only archive of paper data (git-ignored)
+└── tools/compute_flops.py        FLOP profiler
 ```
 
 ## Citation
