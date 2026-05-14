@@ -33,8 +33,6 @@ factorises as $\xi = (T/B)\cdot(k/n)$.
 > ADC significantly outperforms state-of-the-art methods, maintaining high
 > accuracy even at extreme compression regimes.
 
-The paper PDF is included in this repository as [`Paper.pdf`](Paper.pdf).
-
 ## Installation
 
 ```bash

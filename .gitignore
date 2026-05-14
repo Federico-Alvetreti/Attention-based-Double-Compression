@@ -5,6 +5,9 @@ results/
 # Regenerated figure PDFs; the figure scripts produce these from paper_results/.
 figures/outputs/
 
+# Paper PDF kept on disk only (not redistributed via the repo).
+Paper.pdf
+
 # Local-only result/plot archives. paper_results/ holds the canonical paper
 # data; for now we don't publish it (decide later: LFS / Zenodo).
 paper_results/
