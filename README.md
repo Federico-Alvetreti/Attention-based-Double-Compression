@@ -36,10 +36,10 @@ by Federico Alvetreti, Jary Pomponi, Paolo Di Lorenzo, and Simone Scardapane.
 
 
 
-|               | DeiT-T                          | DeiT-S                           |
-| ------------- | ------------------------------- | -------------------------------- |
-| **CIFAR-100** | ![](images/cifar100_tiny.png)   | ![](images/cifar100_small.png)   |
-| **Food-101**  | ![](images/food-101_tiny.png)   | ![](images/food-101_small.png)   |
+|                   | DeiT-T                               | DeiT-S                                |
+| ------------------| ------------------------------------ | ------------------------------------- |
+| **CIFAR-100**     | ![](images/cifar100_tiny.png)        | ![](images/cifar100_small.png)        |
+| **Food-101**      | ![](images/food-101_tiny.png)        | ![](images/food-101_small.png)        |
 
 ## Installation
 
@@ -48,7 +48,7 @@ conda env create -f environment.yaml
 conda activate split-learning
 ```
 
-The environment pins PyTorch 2.5 + CUDA 12, timm 1.0.14, Hydra 1.3, and the `kmeans_pytorch` clustering helper used by ADC.
+The environment pins PyTorch 2.5 + CUDA 12, timm 1.0.14, Hydra 1.3.
 
 ## Data
 
@@ -56,7 +56,7 @@ The environment pins PyTorch 2.5 + CUDA 12, timm 1.0.14, Hydra 1.3, and the `kme
 python scripts/download_data.py
 ```
 
-Downloads CIFAR-100 and Food-101 into `./data/` (via `torchvision`) and caches the pretrained DeiT-T / DeiT-S weights through `timm`.
+Downloads CIFAR-100 and Food-101 and caches the pretrained DeiT-T / DeiT-S weights.
 
 ## Quickstart
 
@@ -67,15 +67,7 @@ python main.py method=adc dataset=cifar_100 model=deit_tiny_patch16_224 \
     method.parameters.compression=0.1
 ```
 
-Output is written under
-
-```
-results/<experiment_name>/<dataset>/<model>/<method>/communication=clean/params=<...>/
-```
-
-including `training_results.json`, `best_model.pt`, and Hydra metadata. The default `experiment_name` is `default`; override with `hyperparameters.experiment_name=<name>`.
-
-ADC also exposes the two underlying factors directly, if you want to step off the diagonal $T/B = k/n = \sqrt{\xi}$:
+ADC also exposes the two underlying compression factors directly, if you want to step off the diagonal $T/B = k/n = \sqrt{\xi}$:
 
 ```bash
 python main.py method=adc \
@@ -85,9 +77,11 @@ python main.py method=adc \
 
 ## Reproducing the paper
 
-The full sweep behind Figures 3 and 4 is wrapped in [`scripts/run_paper_experiments.sh`](scripts/run_paper_experiments.sh) — six methods × two models × two datasets × the compression sweep below × three seeds (`43422`, `51`, `114`). FLOP measurements behind Figure 5 are produced by [`scripts/profile_flops.sh`](scripts/profile_flops.sh) driving [`tools/compute_flops.py`](tools/compute_flops.py). The $(T/B,\,k/n)$ grid search visualised in Figure 2 was run with [`scripts/tune_adc.sh`](scripts/tune_adc.sh).
+The full sweep behind Figures 3 and 4 is wrapped in [`scripts/run_paper_experiments.sh`](scripts/run_paper_experiments.sh) — six methods × two models × two datasets × the compression sweep below × three seeds (`43422`, `51`, `114`).
+FLOP measurements behind Figure 5 are produced by [`scripts/profile_flops.sh`](scripts/profile_flops.sh). 
+The $(T/B,\,k/n)$ grid search visualised in Figure 2 was run with [`scripts/tune_adc.sh`](scripts/tune_adc.sh).
 
-All runs below use `dataset={cifar_100, food_101}`, `model={deit_tiny_patch16_224, deit_small_patch16_224}`, and split point `l=3` (default).
+All runs below use `dataset={cifar_100, food_101}`, `model={deit_tiny_patch16_224, deit_small_patch16_224}`, and split point `l=3`.
 
 <details>
 <summary><b>Base (no compression)</b></summary>
@@ -159,7 +153,7 @@ done
 │   ├── method/{base,bottlenet,c3_sl,top_k,random_top_k,adc}.yaml
 │   ├── model/{deit_tiny,deit_small}_patch16_224.yaml
 │   └── optimizer/adam.yaml
-├── methods/                      Compression methods (paper baselines + ADC)
+├── methods/                      Compression methods
 ├── comm/communication.py         Clean / Gaussian-noise channels
 ├── scripts/
 │   ├── download_data.py
