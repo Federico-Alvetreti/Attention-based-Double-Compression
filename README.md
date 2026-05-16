@@ -5,6 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 Official implementation of **["Communication Efficient Split Learning of ViTs with Attention-based Double Compression"](https://arxiv.org/pdf/2509.15058)**
+
 by Federico Alvetreti, Jary Pomponi, Paolo Di Lorenzo, and Simone Scardapane.
 
 ---
